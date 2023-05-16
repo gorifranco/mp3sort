@@ -1,211 +1,186 @@
 package org.cmc.music.myid3;
 
-import java.io.IOException;
-
 import org.cmc.music.myid3.id3v2.MyID3v2Constants;
 import org.cmc.music.util.Debug;
 
-public abstract class UnicodeMetrics implements MyID3v2Constants
-{
-	// public final int findEnd(byte bytes[]) throws IOException
-	// {
-	// return findEnd(bytes, 0);
-	// }
+import java.io.IOException;
 
-	public final int findEndWithTerminator(byte bytes[], int index)
-			throws IOException
-	{
-		return findEnd(bytes, index, true);
-	}
+public abstract class UnicodeMetrics implements MyID3v2Constants {
+    // public final int findEnd(byte bytes[]) throws IOException
+    // {
+    // return findEnd(bytes, 0);
+    // }
 
-	public final int findEndWithoutTerminator(byte bytes[], int index)
-			throws IOException
-	{
-		return findEnd(bytes, index, false);
-	}
+    public final int findEndWithTerminator(byte bytes[], int index)
+            throws IOException {
+        return findEnd(bytes, index, true);
+    }
 
-	protected abstract int findEnd(byte bytes[], int index,
-			boolean includeTerminator) throws IOException;
+    public final int findEndWithoutTerminator(byte bytes[], int index)
+            throws IOException {
+        return findEnd(bytes, index, false);
+    }
 
-	public static UnicodeMetrics getInstance(int charEncodingCode)
-			throws IOException
-	{
-		switch (charEncodingCode)
-		{
-		case CHAR_ENCODING_CODE_ISO_8859_1:
-			return new UnicodeMetricsASCII();
-		case CHAR_ENCODING_CODE_UTF_8:
-			// Debug.debug("CHAR_ENCODING_CODE_UTF_8");
-			return new UnicodeMetricsUTF8();
-		case CHAR_ENCODING_CODE_UTF_16_WITH_BOM:
-			// Debug.debug("CHAR_ENCODING_CODE_UTF_16_WITH_BOM");
-			return new UnicodeMetricsUTF16WithBOM();
-		case CHAR_ENCODING_CODE_UTF_16_NO_BOM:
-			Debug.debug("witness: CHAR_ENCODING_CODE_UTF_16_NO_BOM");
-			return new UnicodeMetricsUTF16NoBOM();
-		default:
-			throw new IOException("Unknown char encoding code: "
-					+ charEncodingCode);
-		}
-	}
+    protected abstract int findEnd(byte bytes[], int index,
+                                   boolean includeTerminator) throws IOException;
 
-	private static class UnicodeMetricsASCII extends UnicodeMetrics
-	{
-		public int findEnd(byte bytes[], int index, boolean includeTerminator)
-				throws IOException
-		{
-			for (int i = index; i < bytes.length; i++)
-			{
-				if (bytes[i] == 0)
-					return includeTerminator ? i + 1 : i;
-			}
-			return bytes.length;
-			// throw new IOException("Terminator not found.");
-		}
-	}
+    public static UnicodeMetrics getInstance(int charEncodingCode)
+            throws IOException {
+        switch (charEncodingCode) {
+            case CHAR_ENCODING_CODE_ISO_8859_1:
+                return new UnicodeMetricsASCII();
+            case CHAR_ENCODING_CODE_UTF_8:
+                // Debug.debug("CHAR_ENCODING_CODE_UTF_8");
+                return new UnicodeMetricsUTF8();
+            case CHAR_ENCODING_CODE_UTF_16_WITH_BOM:
+                // Debug.debug("CHAR_ENCODING_CODE_UTF_16_WITH_BOM");
+                return new UnicodeMetricsUTF16WithBOM();
+            case CHAR_ENCODING_CODE_UTF_16_NO_BOM:
+                Debug.debug("witness: CHAR_ENCODING_CODE_UTF_16_NO_BOM");
+                return new UnicodeMetricsUTF16NoBOM();
+            default:
+                throw new IOException("Unknown char encoding code: "
+                        + charEncodingCode);
+        }
+    }
 
-	private static class UnicodeMetricsUTF8 extends UnicodeMetrics
-	{
+    private static class UnicodeMetricsASCII extends UnicodeMetrics {
+        public int findEnd(byte bytes[], int index, boolean includeTerminator)
+                throws IOException {
+            for (int i = index; i < bytes.length; i++) {
+                if (bytes[i] == 0)
+                    return includeTerminator ? i + 1 : i;
+            }
+            return bytes.length;
+            // throw new IOException("Terminator not found.");
+        }
+    }
 
-		public int findEnd(byte bytes[], int index, boolean includeTerminator)
-				throws IOException
-		{
-			// http://en.wikipedia.org/wiki/UTF-8
+    private static class UnicodeMetricsUTF8 extends UnicodeMetrics {
 
-			while (true)
-			{
-				if (index == bytes.length)
-					return bytes.length;
-				if (index > bytes.length)
-					throw new IOException("Terminator not found.");
+        public int findEnd(byte bytes[], int index, boolean includeTerminator)
+                throws IOException {
+            // http://en.wikipedia.org/wiki/UTF-8
 
-				int c1 = 0xff & bytes[index++];
-				if (c1 == 0)
-					return includeTerminator ? index : index - 1;
-				else if (c1 <= 0x7f)
-					continue;
-				else if (c1 <= 0xDF)
-				{
-					if (index >= bytes.length)
-						throw new IOException("Invalid unicode.");
+            while (true) {
+                if (index == bytes.length)
+                    return bytes.length;
+                if (index > bytes.length)
+                    throw new IOException("Terminator not found.");
 
-					int c2 = 0xff & bytes[index++];
-					if (c2 < 0x80 || c2 > 0xBF)
-						throw new IOException("Invalid code point.");
-				} else if (c1 <= 0xEF)
-				{
-					if (index >= bytes.length - 1)
-						throw new IOException("Invalid unicode.");
+                int c1 = 0xff & bytes[index++];
+                if (c1 == 0)
+                    return includeTerminator ? index : index - 1;
+                else if (c1 <= 0x7f)
+                    continue;
+                else if (c1 <= 0xDF) {
+                    if (index >= bytes.length)
+                        throw new IOException("Invalid unicode.");
 
-					int c2 = 0xff & bytes[index++];
-					if (c2 < 0x80 || c2 > 0xBF)
-						throw new IOException("Invalid code point.");
-					int c3 = 0xff & bytes[index++];
-					if (c3 < 0x80 || c3 > 0xBF)
-						throw new IOException("Invalid code point.");
-				} else if (c1 <= 0xF4)
-				{
-					if (index >= bytes.length - 2)
-						throw new IOException("Invalid unicode.");
+                    int c2 = 0xff & bytes[index++];
+                    if (c2 < 0x80 || c2 > 0xBF)
+                        throw new IOException("Invalid code point.");
+                } else if (c1 <= 0xEF) {
+                    if (index >= bytes.length - 1)
+                        throw new IOException("Invalid unicode.");
 
-					int c2 = 0xff & bytes[index++];
-					if (c2 < 0x80 || c2 > 0xBF)
-						throw new IOException("Invalid code point.");
-					int c3 = 0xff & bytes[index++];
-					if (c3 < 0x80 || c3 > 0xBF)
-						throw new IOException("Invalid code point.");
-					int c4 = 0xff & bytes[index++];
-					if (c4 < 0x80 || c4 > 0xBF)
-						throw new IOException("Invalid code point.");
-				} else
-					throw new IOException("Invalid code point.");
-			}
-		}
-	}
+                    int c2 = 0xff & bytes[index++];
+                    if (c2 < 0x80 || c2 > 0xBF)
+                        throw new IOException("Invalid code point.");
+                    int c3 = 0xff & bytes[index++];
+                    if (c3 < 0x80 || c3 > 0xBF)
+                        throw new IOException("Invalid code point.");
+                } else if (c1 <= 0xF4) {
+                    if (index >= bytes.length - 2)
+                        throw new IOException("Invalid unicode.");
 
-	private abstract static class UnicodeMetricsUTF16 extends UnicodeMetrics
-	{
-		protected static final int BYTE_ORDER_BIG_ENDIAN = 0;
-		protected static final int BYTE_ORDER_LITTLE_ENDIAN = 1;
-		protected int byteOrder = BYTE_ORDER_BIG_ENDIAN;
+                    int c2 = 0xff & bytes[index++];
+                    if (c2 < 0x80 || c2 > 0xBF)
+                        throw new IOException("Invalid code point.");
+                    int c3 = 0xff & bytes[index++];
+                    if (c3 < 0x80 || c3 > 0xBF)
+                        throw new IOException("Invalid code point.");
+                    int c4 = 0xff & bytes[index++];
+                    if (c4 < 0x80 || c4 > 0xBF)
+                        throw new IOException("Invalid code point.");
+                } else
+                    throw new IOException("Invalid code point.");
+            }
+        }
+    }
 
-		public UnicodeMetricsUTF16(int byteOrder)
-		{
-			this.byteOrder = byteOrder;
-		}
+    private abstract static class UnicodeMetricsUTF16 extends UnicodeMetrics {
+        protected static final int BYTE_ORDER_BIG_ENDIAN = 0;
+        protected static final int BYTE_ORDER_LITTLE_ENDIAN = 1;
+        protected int byteOrder = BYTE_ORDER_BIG_ENDIAN;
 
-		public int findEnd(byte bytes[], int index, boolean includeTerminator)
-				throws IOException
-		{
-			// http://en.wikipedia.org/wiki/UTF-16/UCS-2
+        public UnicodeMetricsUTF16(int byteOrder) {
+            this.byteOrder = byteOrder;
+        }
 
-			while (true)
-			{
-				if (index == bytes.length)
-					return bytes.length;
-				if (index > bytes.length - 2)
-					throw new IOException("Terminator not found.");
+        public int findEnd(byte bytes[], int index, boolean includeTerminator)
+                throws IOException {
+            // http://en.wikipedia.org/wiki/UTF-16/UCS-2
 
-				int c1 = 0xff & bytes[index++];
-				int c2 = 0xff & bytes[index++];
-				int msb1 = byteOrder == BYTE_ORDER_BIG_ENDIAN ? c1 : c2;
+            while (true) {
+                if (index == bytes.length)
+                    return bytes.length;
+                if (index > bytes.length - 2)
+                    throw new IOException("Terminator not found.");
 
-				if (c1 == 0 && c2 == 0)
-				{
-					return includeTerminator ? index : index - 2;
-				} else if (msb1 >= 0xD8)
-				{
-					if (index > bytes.length - 1)
-						throw new IOException("Terminator not found.");
+                int c1 = 0xff & bytes[index++];
+                int c2 = 0xff & bytes[index++];
+                int msb1 = byteOrder == BYTE_ORDER_BIG_ENDIAN ? c1 : c2;
 
-					// second word.
-					int c3 = 0xff & bytes[index++];
-					int c4 = 0xff & bytes[index++];
-					int msb2 = byteOrder == BYTE_ORDER_BIG_ENDIAN ? c3 : c4;
-					if (msb2 < 0xDC)
-						throw new IOException("Invalid code point.");
-				}
-			}
-		}
-	}
+                if (c1 == 0 && c2 == 0) {
+                    return includeTerminator ? index : index - 2;
+                } else if (msb1 >= 0xD8) {
+                    if (index > bytes.length - 1)
+                        throw new IOException("Terminator not found.");
 
-	private static class UnicodeMetricsUTF16NoBOM extends UnicodeMetricsUTF16
-	{
+                    // second word.
+                    int c3 = 0xff & bytes[index++];
+                    int c4 = 0xff & bytes[index++];
+                    int msb2 = byteOrder == BYTE_ORDER_BIG_ENDIAN ? c3 : c4;
+                    if (msb2 < 0xDC)
+                        throw new IOException("Invalid code point.");
+                }
+            }
+        }
+    }
 
-		public UnicodeMetricsUTF16NoBOM()
-		{
-			super(BYTE_ORDER_BIG_ENDIAN);
-		}
+    private static class UnicodeMetricsUTF16NoBOM extends UnicodeMetricsUTF16 {
 
-	}
+        public UnicodeMetricsUTF16NoBOM() {
+            super(BYTE_ORDER_BIG_ENDIAN);
+        }
 
-	private static class UnicodeMetricsUTF16WithBOM extends UnicodeMetricsUTF16
-	{
+    }
 
-		public UnicodeMetricsUTF16WithBOM()
-		{
-			super(BYTE_ORDER_BIG_ENDIAN);
-		}
+    private static class UnicodeMetricsUTF16WithBOM extends UnicodeMetricsUTF16 {
 
-		public int findEnd(byte bytes[], int index, boolean includeTerminator)
-				throws IOException
-		{
-			// http://en.wikipedia.org/wiki/UTF-16/UCS-2
+        public UnicodeMetricsUTF16WithBOM() {
+            super(BYTE_ORDER_BIG_ENDIAN);
+        }
 
-			if (index >= bytes.length - 1)
-				throw new IOException("Missing BOM.");
+        public int findEnd(byte bytes[], int index, boolean includeTerminator)
+                throws IOException {
+            // http://en.wikipedia.org/wiki/UTF-16/UCS-2
 
-			int c1 = 0xff & bytes[index++];
-			int c2 = 0xff & bytes[index++];
-			if (c1 == 0xFF && c2 == 0xFE)
-				byteOrder = BYTE_ORDER_LITTLE_ENDIAN;
-			else if (c1 == 0xFE && c2 == 0xFF)
-				byteOrder = BYTE_ORDER_BIG_ENDIAN;
-			else
-				throw new IOException("Invalid byte order mark.");
+            if (index >= bytes.length - 1)
+                throw new IOException("Missing BOM.");
 
-			return super.findEnd(bytes, index, includeTerminator);
-		}
-	}
+            int c1 = 0xff & bytes[index++];
+            int c2 = 0xff & bytes[index++];
+            if (c1 == 0xFF && c2 == 0xFE)
+                byteOrder = BYTE_ORDER_LITTLE_ENDIAN;
+            else if (c1 == 0xFE && c2 == 0xFF)
+                byteOrder = BYTE_ORDER_BIG_ENDIAN;
+            else
+                throw new IOException("Invalid byte order mark.");
+
+            return super.findEnd(bytes, index, includeTerminator);
+        }
+    }
 
 }

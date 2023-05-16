@@ -1,53 +1,44 @@
 /**
- * 
+ *
  */
 package org.cmc.music.fs;
 
-public class ParsedFilename
-{
-	public final String raw;
+public class ParsedFilename {
+    public final String raw;
 
-	private String artist = null, title = null, album = null,
-			trackNumber = null;
+    private String artist = null, title = null, album = null,
+            trackNumber = null;
 
-	public ParsedFilename(final String raw)
-	{
-		this.raw = raw;
-	}
+    public ParsedFilename(final String raw) {
+        this.raw = raw;
+    }
 
-	public String getAlbum()
-	{
-		return album;
-	}
+    public String getAlbum() {
+        return album;
+    }
 
-	public void setAlbum(String album)
-	{
-		this.album = album;
-	}
+    public void setAlbum(String album) {
+        this.album = album;
+    }
 
-	public String getArtist()
-	{
-		return artist;
-	}
+    public String getArtist() {
+        return artist;
+    }
 
-	public void setArtist(String artist)
-	{
-		this.artist = artist;
-	}
+    public void setArtist(String artist) {
+        this.artist = artist;
+    }
 
-	public String getTitle()
-	{
-		return title;
-	}
+    public String getTitle() {
+        return title;
+    }
 
-	public void setTitle(String title)
-	{
-		this.title = title;
-	}
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-	public String getTrackNumber()
-	{
-		return trackNumber;
-	}
+    public String getTrackNumber() {
+        return trackNumber;
+    }
 
 }
