@@ -56,12 +56,6 @@ public class DataModifyer {
         }
     }
 
-    private IMusicMetadata getMetadata(File file) {
-        MusicMetadataSet set = getSongData(file);
-        return set.getSimplified();
-    }
-
-
     public void changeMetadata(File file) {
         MusicMetadataSet set = getSongData(file);
         String[] artistTitle = null;
@@ -73,6 +67,7 @@ public class DataModifyer {
         String genreName = "";
         Number year = null;
         Number trackNumber = null;
+        Number genreID = null;
 
         if (set == null) // perhaps no metadata
         {
@@ -82,7 +77,7 @@ public class DataModifyer {
                 artist = metadata.getArtist();
                 album = metadata.getAlbum();
                 song_title = metadata.getSongTitle();
-
+                genreID = metadata.getGenreID();
                 year = metadata.getYear();
                 genreName = metadata.getGenreName();
                 trackNumber = metadata.getTrackNumberNumeric();
@@ -101,7 +96,7 @@ public class DataModifyer {
             meta.setAlbum(album);
             meta.setArtist(artist);
             meta.setSongTitle(song_title);
-//            meta.setGenreName(genreName);
+            meta.setGenre(genreName, genreID);
             meta.setYear(year);
             meta.setTrackNumberNumeric(trackNumber);
 
@@ -138,6 +133,7 @@ public class DataModifyer {
             if(aux[0].charAt(aux[0].length()-1) == ' ') aux[0] = aux[0].substring(0, aux[0].length()-2);
             return aux;
         }
+
         System.out.println("cant rename: " + song);
         return null;
     }
